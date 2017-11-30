@@ -1,0 +1,17 @@
+{
+  "name": "iChangyi",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "openI18n": {},
+  "scripts": {
+    "_test": "export NODE_ENV=test && mocha",
+    "test": "nyc --reporter=lcov --reporter=text-summary npm run _test"
+  },
+  "author": "Redstone Zhao",
+  "license": "MIT",
+  "devDependencies": {
+    "codecov": "^1.0.1",
+    "mocha": "^3.0.2",
+    "nyc": "^8.3.0"
+  }
+}
