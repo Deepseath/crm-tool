@@ -49,7 +49,7 @@ describe('lib/lib', function testIkUnit() {
           action: 'chkname',
           cus_name: item.cus_name,
           corp_id: item.corp_id,
-        }, url));
+        }), url);
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve({ data: checkData });
@@ -68,7 +68,7 @@ describe('lib/lib', function testIkUnit() {
         assert.equal(createURL('https://yq-private-api.vchangyi.com/cus/report.php', {
           id: item.id,
           status: JSON.stringify(checkData.result.data),
-        }, url));
+        }), url);
         assert.deepEqual(config.auth, auth);
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -76,7 +76,7 @@ describe('lib/lib', function testIkUnit() {
           }, 200);
         });
       };
-      const result = await report(item, auth);
+      const result = await report(item, checkData.result.data, auth);
       assert.deepEqual(result, reportData.result);
       axios.get = get;
     });
@@ -99,6 +99,26 @@ describe('lib/lib', function testIkUnit() {
 
     it('submit', async () => {
       const item = listData.result.list[0];
+      axios.get = (url) => {
+        // mock check
+        if (url.indexOf('https://boss.exmailgz.com/cgi-bin/ww_cuschkin') === 0) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: checkData });
+            }, 200);
+          });
+        }
+        // mock report
+        if (url.indexOf('https://yq-private-api.vchangyi.com/cus/report.php') === 0) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: reportData });
+            }, 200);
+          });
+        }
+        throw new Error('出错了，不应该到这里');
+      };
+
       axios.post = (url, body) => {
         assert.equal('https://boss.exmailgz.com/cgi-bin/ww_cuschkin', url);
         assert.deepEqual(item, body);
@@ -109,6 +129,7 @@ describe('lib/lib', function testIkUnit() {
         });
       };
       await submit(auth)(item);
+      axios.get = get;
       axios.post = post;
     });
   });
@@ -165,7 +186,178 @@ describe('lib/lib', function testIkUnit() {
       };
       await new Promise((resolve) => {
         main(win, (error, stats) => {
-          console.log(stats);
+          assert.ok(stats.consumeMS > 0);
+          resolve();
+        });
+      });
+    });
+
+    it('case2 has error', async () => {
+      let count = 0;
+      let first = true;
+      const win = {
+        prompt: () => {
+          if (count === 0) {
+            count += 1;
+            return auth.username;
+          }
+          return auth.password;
+        },
+      };
+
+      axios.get = (url, config) => {
+        // mock getList
+        if (url === 'https://yq-private-api.vchangyi.com/cus/checkin.php') {
+          assert.deepEqual(config.auth, auth);
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: listData });
+            }, 200);
+          });
+        }
+        // mock check
+        if (url.indexOf('https://boss.exmailgz.com/cgi-bin/ww_cuschkin') === 0) {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              if (first) {
+                first = false;
+                reject(new Error('遇到错误了 checkin'));
+              } else {
+                resolve({ data: checkData });
+              }
+            }, 200);
+          });
+        }
+        // mock report
+        if (url.indexOf('https://yq-private-api.vchangyi.com/cus/report.php') === 0) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: reportData });
+            }, 200);
+          });
+        }
+        throw new Error('出错了，不应该到这里');
+      };
+
+      axios.post = (url) => {
+        assert.equal('https://boss.exmailgz.com/cgi-bin/ww_cuschkin', url);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ data: submitData });
+          }, 200);
+        });
+      };
+      await new Promise((resolve) => {
+        main(win, (error, stats) => {
+          assert.equal(null, error);
+          assert.ok(stats.consumeMS > 0);
+          stats.consumeMS = 605;
+          assert.deepEqual(stats, {
+            submitSuccess: [],
+            submitFailds: [],
+            checkSuccess: [
+              'c81e728d9d4c2f636f067f89cc14862c',
+            ],
+            checkFailds: [
+              [
+                'c4ca4238a0b923820dcc509a6f75849b',
+                '遇到错误了 checkin',
+              ],
+            ],
+            reportSuccess: [
+              'c81e728d9d4c2f636f067f89cc14862c',
+            ],
+            reportFailds: [],
+            consumeMS: 605,
+          });
+
+          resolve();
+        });
+      });
+    });
+
+    it('case3 has error, has submit', async () => {
+      let count = 0;
+      let first = true;
+      const win = {
+        prompt: () => {
+          if (count === 0) {
+            count += 1;
+            return auth.username;
+          }
+          return auth.password;
+        },
+      };
+
+      axios.get = (url, config) => {
+        // mock getList
+        if (url === 'https://yq-private-api.vchangyi.com/cus/checkin.php') {
+          assert.deepEqual(config.auth, auth);
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: listData });
+            }, 200);
+          });
+        }
+        // mock check
+        if (url.indexOf('https://boss.exmailgz.com/cgi-bin/ww_cuschkin') === 0) {
+          return new Promise((resolve, reject) => {
+            checkData.result.data.can_check_in = true;
+            setTimeout(() => {
+              if (first) {
+                first = false;
+                reject(new Error('遇到错误了 checkin'));
+              } else {
+                resolve({ data: checkData });
+              }
+            }, 200);
+          });
+        }
+        // mock report
+        if (url.indexOf('https://yq-private-api.vchangyi.com/cus/report.php') === 0) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ data: reportData });
+            }, 200);
+          });
+        }
+        throw new Error('出错了，不应该到这里');
+      };
+
+      axios.post = (url) => {
+        assert.equal('https://boss.exmailgz.com/cgi-bin/ww_cuschkin', url);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ data: submitData });
+          }, 200);
+        });
+      };
+      await new Promise((resolve) => {
+        main(win, (error, stats) => {
+          assert.equal(null, error);
+          assert.ok(stats.consumeMS > 0);
+          stats.consumeMS = 605;
+          assert.deepEqual(stats, {
+            submitSuccess: [
+              'c81e728d9d4c2f636f067f89cc14862c',
+            ],
+            submitFailds: [],
+            checkSuccess: [
+              'c81e728d9d4c2f636f067f89cc14862c',
+            ],
+            checkFailds: [
+              [
+                'c4ca4238a0b923820dcc509a6f75849b',
+                '遇到错误了 checkin',
+              ],
+            ],
+            reportSuccess: [
+              'c81e728d9d4c2f636f067f89cc14862c',
+            ],
+            reportFailds: [],
+            consumeMS: 605,
+          });
+
           resolve();
         });
       });
