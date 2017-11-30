@@ -1,0 +1,12 @@
+{
+  "errcode":"0",
+  "errmsg":"ok",
+  "result":{
+    "data":{
+      "check_in_info":null,
+      "can_check_in":false,
+      "can_check_in_ret":"3"
+    },
+    "ret":"0"
+  }
+}

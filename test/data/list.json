@@ -1,0 +1,36 @@
+{
+  "errcode":"0",
+  "errmsg":"ok",
+  "result":{
+    "list":[
+      {
+        "id":"c4ca4238a0b923820dcc509a6f75849b",
+        "cus_origin":"3",
+        "cus_name":"企业名称",
+        "corp_id":"Corpid",
+        "cus_tel":"公司电话",
+        "cus_person":"联系人",
+        "cus_phone":"联系电话",
+        "cus_industry":"24",
+        "cus_scale":"0",
+        "cus_prov":"北京",
+        "cus_city":"北京",
+        "cus_remark":"企业简介"
+      },
+      {
+        "id":"c81e728d9d4c2f636f067f89cc14862c",
+        "cus_origin":"3",
+        "cus_name":"企业名称",
+        "corp_id":"Corpid",
+        "cus_tel":"公司电话",
+        "cus_person":"联系人",
+        "cus_phone":"联系电话",
+        "cus_industry":"-1",
+        "cus_scale":"-1",
+        "cus_prov":"上海",
+        "cus_city":"上海",
+        "cus_remark":"企业简介"
+      }
+    ]
+  }
+}

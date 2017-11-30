@@ -5,13 +5,16 @@
   "openI18n": {},
   "scripts": {
     "_test": "export NODE_ENV=test && mocha",
+    "build": "webpack lib/index.js dist/index.dist.js && uglifyjs dist/index.dist.js > dist/index.min.js",
     "test": "nyc --reporter=lcov --reporter=text-summary npm run _test"
   },
   "author": "Redstone Zhao",
   "license": "MIT",
   "devDependencies": {
     "codecov": "^1.0.1",
-    "mocha": "^3.0.2",
+    "mocha": "^4.0.1",
+    "uglify-es": "^3.2.1",
+    "webpack": "^3.10.0",
     "nyc": "^8.3.0"
   },
   "dependencies": {
