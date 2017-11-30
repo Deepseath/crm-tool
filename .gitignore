@@ -4,7 +4,7 @@ logs/*.log
 npm-debug.log*
 *.po\~
 docs/apidocs/*
-dist
+dist/*.js
 storage
 
 # Runtime data
